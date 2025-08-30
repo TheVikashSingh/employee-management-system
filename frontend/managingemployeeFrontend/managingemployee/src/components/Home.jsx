@@ -10,8 +10,9 @@ const Home = () => {
   const [lastName, setLastName] = useState(null);
   const [email, setEmail] = useState(null);
   const [salary, setSalary] = useState(null);
-  const [departmentId, setDepartmentId] = useState(null);
+  const [departmentId, setDepartmentId] = useState(1);
   const queryClient = useQueryClient();
+  const [employeeId, setEmployeeId] = useState(null);
 
 
   const {data, isPending, isError, error} = useQuery({
@@ -35,11 +36,29 @@ const Home = () => {
     },
 
     onSuccess: () => {
-      alert("Hero Added Successfully");
       queryClient.invalidateQueries({queryKey:["get-employees"]});
     }
   });
 
+
+  const {mutate:deleteEmployee} = useMutation({
+    mutationFn: async (id) => {
+      const url = "http://localhost:8080/employees/" + id;
+      const response = await fetch(url,{
+        method: "DELETE",
+      });
+      if(!response.ok){
+        throw new Error("Failed to delete an emplpyee");
+      }
+      return id;
+      },
+    
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey:["get-employees"]});
+    }
+  }
+  );
+ 
 
   function inputFirstName(e){
     setFirstName(e.target.value);
@@ -59,6 +78,11 @@ const Home = () => {
 
   function inputDepartmentId(e){
     setDepartmentId(e.target.value);
+    
+  }
+
+  function inputEmployeeId(e){
+    setEmployeeId(e.target.value);
   }
 
   function submitDetails(){
@@ -70,8 +94,12 @@ const Home = () => {
       "department_id" : departmentId
     };
     mutate(newEmployee);
-    alert("Employee Added!");
   }
+
+  function deleteEmployeeById(){
+    deleteEmployee(employeeId);
+  }
+  
 
 
   return (
@@ -79,14 +107,16 @@ const Home = () => {
     <>
 
 
-
     <div style={{display:"flex", justifyContent:"center", fontFamily:"Cambria"}}>
-      <h1>EMPLOYEE MANAGEMENT SYSTEM</h1></div>
-    <hr></hr>
-    <div>
-        
-            <div style={{border:"1px solid black",fontFamily:"Cambria"}}>
-                <h3>Employee Details:</h3><br />
+      <h1 style={{color:"crimson"}}>EMPLOYEE  MANAGEMENT  SYSTEM</h1></div>
+    <hr />
+    <div style={{display:"flex", 
+            flexDirection:"column", justifyContent:"center", alignItems:"center"}}>
+            
+            <div style={{border:"5px solid white",fontFamily:"Cambria",
+            borderRadius:"5px",padding:"10px 10px 10px", boxShadow:"5px 5px 5px grey"
+            }}>
+                <h2 style={{display:"flex", justifyContent:"center"}}>Employee Details:</h2><br />
 
                 <label>Employee's Name: 
                 <input type='text' placeholder='First Name...' id='input_firstName' onChange={inputFirstName}/>
@@ -98,23 +128,56 @@ const Home = () => {
                 </label><br />
 
                 <label>Employee's Salary: 
-                <input type='text' placeholder='Salary...' onChange={inputSalary} />
+                <input type='number' placeholder='Salary...' onChange={inputSalary} />
                 </label><br />
 
                 <label>Employee's Department ID: 
-                <input type='text' placeholder='Dept. ID...' id='input_departmentId' onChange={inputDepartmentId} />
+                <input type='number' value={departmentId} placeholder='Dept. ID...' id='input_departmentId' onChange={inputDepartmentId} />
                 </label><br /><br />
-
 
             <button onClick={submitDetails}>Submit Details</button>
 
-            
             </div>
+            {/* <div style={{border:"2px solid red"}}>
+              <label>
+                <button onClick={deleteEmployeeById}>Delete Employee</button>
+                <input type="number" placeholder='Employee Id...' onChange={inputEmployeeId}></input>
+              </label>
+            </div> */}
+            
+
             <br />
             <br />
-            <div style={{border:"2px solid grey",fontFamily:"Cambria"}}>
+            
+            <div style={{border:"2px solid grey",fontFamily:"Cambria",
+              display:"inline-block",padding:"5px 5px 5px",
+              borderRadius:"5px"
+            }}>
             <h3>All Employees in the Organisation:-</h3>
-            <h2 id = "Output">{JSON.stringify(data)}</h2>
+            {isPending && <h2>Loading Data...</h2>}
+            {isError && <p style={{color:"red"}}>Error {error.message}</p>}
+            {data && (<table style={{font:"Arial", padding: "10px 10px 10px",
+              background:"beige",color:"black"}} border="2">
+              <tr>
+                <th>Employee ID</th>
+                <th>Employee Name</th>
+                <th>Email</th>
+                <th>Salary</th>
+                <th>Department</th>
+                <th>Actions</th>
+              </tr>
+              <tbody>
+                {data.map((emp) => (
+                  <tr>
+                    <td>{emp.id}</td>
+                    <td>{emp.first_name} {emp.last_name}</td>
+                    <td>{emp.email}</td>
+                    <td>{emp.salary}</td>
+                    <td>{emp.department_id}</td>
+                    <td><button onClick={() => deleteEmployee(emp.id)}>DEL</button></td>
+                    </tr>))}
+              </tbody>
+              </table>)}
             </div>
                     
     </div>

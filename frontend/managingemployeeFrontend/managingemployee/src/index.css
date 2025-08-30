@@ -1,4 +1,28 @@
 body{
     background-color: black;
     color: #ffffff;
+    font-size: 1.3rem;
+}
+
+button{
+    background-color:burlywood;
+    color: black;
+    font-size: 1.2rem;
+    border: none;
+    border-radius: 10px;
+}
+
+button:hover{
+    background-color: beige;
+}
+
+input{
+    font-size: 1.3rem;
+    background-color: rgba(255, 228, 196, 0.982);
+    font-weight: bold;
+}
+
+table tr:hover {
+  background-color: bisque;
+  cursor: pointer;
 }
